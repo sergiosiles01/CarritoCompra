@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Carrito de la compra</title>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const input = document.querySelector(".form input[type='text']");
+        const select = document.querySelector(".form select");
+        const addButton = document.querySelector(".form button");
+        const lista = document.querySelector(".lista");
+        const enviarButton = document.querySelector(".enviar");
+
+        const coloresTiendas = {
+          Mercadona: "mercadona",
+          Lidl: "lidl",
+          Carrefour: "carrefour",
+          Ahorramas: "ahorramas",
+        };
+
+        let carrito = JSON.parse(localStorage.getItem("carrito")) || {};
+
+        function renderCarrito() {
+          lista.innerHTML = "";
+          for (let tienda in carrito) {
+            if (carrito[tienda].length > 0) {
+              const tiendaDiv = document.createElement("div");
+              tiendaDiv.classList.add("tienda", coloresTiendas[tienda]);
+              tiendaDiv.textContent = tienda;
+              lista.appendChild(tiendaDiv);
+
+              carrito[tienda].forEach((prod, index) => {
+                const productoDiv = document.createElement("div");
+                productoDiv.classList.add("producto");
+                productoDiv.textContent = prod;
+
+                productoDiv.addEventListener("click", () => {
+                  if (confirm(`¿Eliminar "${prod}" de ${tienda}?`)) {
+                    carrito[tienda].splice(index, 1);
+                    guardarCarrito();
+                    renderCarrito();
+                  }
+                });
+
+                lista.appendChild(productoDiv);
+              });
+            }
+          }
+        }
+
+        function guardarCarrito() {
+          localStorage.setItem("carrito", JSON.stringify(carrito));
+        }
+
+        // Añadir producto
+        addButton.addEventListener("click", () => {
+          const producto = input.value.trim();
+          const tienda = select.value;
+
+          if (producto === "") {
+            alert("Escribe un producto");
+            return;
+          }
+
+          if (!carrito[tienda]) {
+            carrito[tienda] = [];
+          }
+
+          carrito[tienda].push(producto);
+
+          guardarCarrito();
+          renderCarrito();
+
+          input.value = "";
+          input.focus();
+        });
+
+        // Botón enviar: generar texto del carrito
+        enviarButton.addEventListener("click", () => {
+          let texto = "🛒 Lista de la compra:\n\n";
+          for (let tienda in carrito) {
+            if (carrito[tienda].length > 0) {
+              texto += `📍 ${tienda}:\n`;
+              carrito[tienda].forEach((prod) => {
+                texto += ` - ${prod}\n`;
+              });
+              texto += "\n";
+            }
+          }
+          // Mostrar en prompt para copiar
+          prompt("Copia tu lista y envíala a quien quieras:", texto);
+        });
+
+        renderCarrito();
+      });
+    </script>
+    <style>
+      body {
+        margin: 0;
+        font-family: "Segoe UI", sans-serif;
+        background: linear-gradient(135deg, #ffecd2, #fcb69f);
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
+
+      .app {
+        flex: 1;
+        width: 100%;
+        padding: 16px;
+        box-sizing: border-box;
+      }
+
+      h1 {
+        font-size: 22px;
+        text-align: center;
+        margin-bottom: 16px;
+        color: #fff;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      }
+
+      .form {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 16px;
+      }
+
+      .form input[type="text"],
+      .form select {
+        padding: 12px;
+        border: none;
+        border-radius: 12px;
+        font-size: 14px;
+        outline: none;
+        background: rgba(255, 255, 255, 0.7);
+      }
+
+      .form input[type="text"] {
+        flex: 2;
+      }
+
+      .form select {
+        flex: 1;
+      }
+
+      .form button {
+        flex: 0.5;
+        padding: 12px;
+        border: none;
+        border-radius: 12px;
+        font-size: 16px;
+        background: linear-gradient(135deg, #6a11cb, #2575fc);
+        color: white;
+        font-weight: bold;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+      }
+
+      .form button:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      }
+
+      .lista {
+        max-height: calc(100vh - 220px);
+        overflow-y: auto;
+        padding-top: 8px;
+        scrollbar-width: thin;
+      }
+
+      .lista::-webkit-scrollbar {
+        width: 6px;
+      }
+      .lista::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.4);
+        border-radius: 4px;
+      }
+
+      .tienda {
+        font-weight: bold;
+        font-size: 16px;
+        color: #fff;
+        padding: 10px;
+        margin: 12px 0 6px;
+        border-radius: 12px;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      }
+      .tienda.mercadona {
+        background: linear-gradient(135deg, #4caf50, #2e7d32);
+      }
+      .tienda.lidl {
+        background: linear-gradient(135deg, #ffd600, #1976d2);
+      }
+      .tienda.carrefour {
+        background: linear-gradient(135deg, #ff1744, #283593);
+      }
+      .tienda.ahorramas {
+        background: linear-gradient(135deg, #ff9800, #f44336);
+      }
+
+      .producto {
+        padding: 12px;
+        margin-bottom: 8px;
+        border-radius: 12px;
+        font-size: 14px;
+        color: #333;
+        background: rgba(255, 255, 255, 0.5);
+        backdrop-filter: blur(6px);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+      }
+
+      /* Botón Enviar fijo abajo */
+      .enviar {
+        width: 100%;
+        padding: 16px;
+        border: none;
+        font-size: 18px;
+        font-weight: bold;
+        color: white;
+        background: linear-gradient(135deg, #ff416c, #ff4b2b);
+        cursor: pointer;
+        border-radius: 0;
+        transition: background 0.3s;
+      }
+      .enviar:hover {
+        background: linear-gradient(135deg, #e63950, #e63b1f);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <h1>🛒 Mi Carrito</h1>
+
+      <div class="form">
+        <input type="text" placeholder="Añadir producto..." />
+        <select>
+          <option>Mercadona</option>
+          <option>Ahorramas</option>
+          <option>Lidl</option>
+          <option>Carrefour</option>
+        </select>
+        <button>+</button>
+      </div>
+
+      <div class="lista">
+        <div class="tienda mercadona">Mercadona</div>
+        <div class="producto">Leche</div>
+        <div class="producto">Pan</div>
+        <div class="producto">Huevos</div>
+      </div>
+    </div>
+
+    <!-- Botón enviar -->
+    <button class="enviar">📤 Enviar lista</button>
+  </body>
+</html>
