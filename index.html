@@ -10,7 +10,6 @@
         const select = document.querySelector(".form select");
         const addButton = document.querySelector(".form button");
         const lista = document.querySelector(".lista");
-        const enviarButton = document.querySelector(".enviar");
 
         const coloresTiendas = {
           Mercadona: "mercadona",
@@ -74,22 +73,6 @@
 
           input.value = "";
           input.focus();
-        });
-
-        // Botón enviar: generar texto del carrito
-        enviarButton.addEventListener("click", () => {
-          let texto = "🛒 Lista de la compra:\n\n";
-          for (let tienda in carrito) {
-            if (carrito[tienda].length > 0) {
-              texto += `📍 ${tienda}:\n`;
-              carrito[tienda].forEach((prod) => {
-                texto += ` - ${prod}\n`;
-              });
-              texto += "\n";
-            }
-          }
-          // Mostrar en prompt para copiar
-          prompt("Copia tu lista y envíala a quien quieras:", texto);
         });
 
         renderCarrito();
@@ -209,23 +192,6 @@
         backdrop-filter: blur(6px);
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
       }
-
-      /* Botón Enviar fijo abajo */
-      .enviar {
-        width: 100%;
-        padding: 16px;
-        border: none;
-        font-size: 18px;
-        font-weight: bold;
-        color: white;
-        background: linear-gradient(135deg, #ff416c, #ff4b2b);
-        cursor: pointer;
-        border-radius: 0;
-        transition: background 0.3s;
-      }
-      .enviar:hover {
-        background: linear-gradient(135deg, #e63950, #e63b1f);
-      }
     </style>
   </head>
   <body>
@@ -243,15 +209,7 @@
         <button>+</button>
       </div>
 
-      <div class="lista">
-        <div class="tienda mercadona">Mercadona</div>
-        <div class="producto">Leche</div>
-        <div class="producto">Pan</div>
-        <div class="producto">Huevos</div>
-      </div>
+      <div class="lista"></div>
     </div>
-
-    <!-- Botón enviar -->
-    <button class="enviar">📤 Enviar lista</button>
   </body>
 </html>
