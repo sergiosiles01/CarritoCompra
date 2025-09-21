@@ -1,245 +1,116 @@
-<!DOCTYPE html>
-<html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Carrito de la compra</title>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
+  import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-database.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-analytics.js";
 
-    <!-- Firebase SDKs -->
-    <script type="module">
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
-      import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-database.js";
-      import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-analytics.js";
+  const firebaseConfig = {
+    apiKey: "AIzaSyC2dVflw3F0ijVmxSBXKXkQirorfqFjUCQ",
+    authDomain: "carritocompra-2abcb.firebaseapp.com",
+    databaseURL: "https://carritocompra-2abcb-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "carritocompra-2abcb",
+    storageBucket: "carritocompra-2abcb.firebasestorage.app",
+    messagingSenderId: "1000224371075",
+    appId: "1:1000224371075:web:7ecd4c08415fbcce0286b6",
+    measurementId: "G-6TJ9P0X9HF"
+  };
 
-      const firebaseConfig = {
-        apiKey: "AIzaSyC2dVflw3F0ijVmxSBXKXkQirorfqFjUCQ",
-        authDomain: "carritocompra-2abcb.firebaseapp.com",
-        databaseURL: "https://carritocompra-2abcb-default-rtdb.europe-west1.firebasedatabase.app",
-        projectId: "carritocompra-2abcb",
-        storageBucket: "carritocompra-2abcb.firebasestorage.app",
-        messagingSenderId: "1000224371075",
-        appId: "1:1000224371075:web:7ecd4c08415fbcce0286b6",
-        measurementId: "G-6TJ9P0X9HF"
-      };
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+  const db = getDatabase(app);
 
-      // Inicializar Firebase
-      const app = initializeApp(firebaseConfig);
-      const analytics = getAnalytics(app);
-      const db = getDatabase(app);
+  document.addEventListener("DOMContentLoaded", async () => {
+    const input = document.querySelector(".form input[type='text']");
+    const select = document.querySelector(".form select");
+    const addButton = document.querySelector(".form button");
+    const lista = document.querySelector(".lista");
 
-      document.addEventListener("DOMContentLoaded", () => {
-        const input = document.querySelector(".form input[type='text']");
-        const select = document.querySelector(".form select");
-        const addButton = document.querySelector(".form button");
-        const lista = document.querySelector(".lista");
+    const coloresTiendas = {
+      Mercadona: "mercadona",
+      Lidl: "lidl",
+      Carrefour: "carrefour",
+      Ahorramas: "ahorramas",
+    };
 
-        const coloresTiendas = {
-          Mercadona: "mercadona",
-          Lidl: "lidl",
-          Carrefour: "carrefour",
-          Ahorramas: "ahorramas",
-        };
+    // Pedimos un nombre de usuario para separar carritos
+    const usuario = prompt("Introduce tu nombre:").trim() || "invitado";
+    let carrito = {};
 
-        let carrito = {};
-
-        // Cargar carrito desde Firebase
-        get(child(ref(db), 'carrito')).then((snapshot) => {
-          if (snapshot.exists()) {
-            carrito = snapshot.val();
-            renderCarrito();
-          }
-        }).catch((error) => console.error(error));
-
-        function guardarCarrito() {
-          set(ref(db, 'carrito'), carrito)
-            .then(() => console.log("Carrito guardado en la nube"))
-            .catch((err) => console.error(err));
+    // Función para cargar carrito desde Firebase
+    async function cargarCarrito() {
+      try {
+        const snapshot = await get(child(ref(db), `carritos/${usuario}`));
+        if (snapshot.exists()) {
+          carrito = snapshot.val();
+        } else {
+          carrito = {};
         }
+        renderCarrito();
+      } catch (error) {
+        console.error(error);
+        carrito = {};
+        renderCarrito();
+      }
+    }
 
-        function renderCarrito() {
-          lista.innerHTML = "";
-          for (let tienda in carrito) {
-            if (carrito[tienda].length > 0) {
-              const tiendaDiv = document.createElement("div");
-              tiendaDiv.classList.add("tienda", coloresTiendas[tienda]);
-              tiendaDiv.textContent = tienda;
-              lista.appendChild(tiendaDiv);
+    // Función para guardar carrito en Firebase
+    function guardarCarrito() {
+      set(ref(db, `carritos/${usuario}`), carrito)
+        .then(() => console.log("Carrito guardado en la nube"))
+        .catch((err) => console.error(err));
+    }
 
-              carrito[tienda].forEach((prod, index) => {
-                const productoDiv = document.createElement("div");
-                productoDiv.classList.add("producto");
-                productoDiv.textContent = prod;
+    // Función para renderizar carrito en pantalla
+    function renderCarrito() {
+      lista.innerHTML = "";
+      for (let tienda in carrito) {
+        if (carrito[tienda].length > 0) {
+          const tiendaDiv = document.createElement("div");
+          tiendaDiv.classList.add("tienda", coloresTiendas[tienda]);
+          tiendaDiv.textContent = tienda;
+          lista.appendChild(tiendaDiv);
 
-                productoDiv.addEventListener("click", () => {
-                  if (confirm(`¿Eliminar "${prod}" de ${tienda}?`)) {
-                    carrito[tienda].splice(index, 1);
-                    guardarCarrito();
-                    renderCarrito();
-                  }
-                });
+          carrito[tienda].forEach((prod, index) => {
+            const productoDiv = document.createElement("div");
+            productoDiv.classList.add("producto");
+            productoDiv.textContent = prod;
 
-                lista.appendChild(productoDiv);
-              });
-            }
-          }
+            productoDiv.addEventListener("click", () => {
+              if (confirm(`¿Eliminar "${prod}" de ${tienda}?`)) {
+                carrito[tienda].splice(index, 1);
+                guardarCarrito();
+                renderCarrito();
+              }
+            });
+
+            lista.appendChild(productoDiv);
+          });
         }
+      }
+    }
 
-        // Añadir producto
-        addButton.addEventListener("click", () => {
-          const producto = input.value.trim();
-          const tienda = select.value;
+    // Botón de añadir producto
+    addButton.addEventListener("click", () => {
+      const producto = input.value.trim();
+      const tienda = select.value;
 
-          if (producto === "") {
-            alert("Escribe un producto");
-            return;
-          }
-
-          if (!carrito[tienda]) {
-            carrito[tienda] = [];
-          }
-
-          carrito[tienda].push(producto);
-          guardarCarrito();
-          renderCarrito();
-
-          input.value = "";
-          input.focus();
-        });
-      });
-    </script>
-
-    <style>
-      body {
-        margin: 0;
-        font-family: "Segoe UI", sans-serif;
-        background: linear-gradient(135deg, #ffecd2, #fcb69f);
-        display: flex;
-        flex-direction: column;
-        min-height: 100vh;
+      if (producto === "") {
+        alert("Escribe un producto");
+        return;
       }
 
-      .app {
-        flex: 1;
-        width: 100%;
-        padding: 16px;
-        box-sizing: border-box;
+      if (!carrito[tienda]) {
+        carrito[tienda] = [];
       }
 
-      h1 {
-        font-size: 22px;
-        text-align: center;
-        margin-bottom: 16px;
-        color: #fff;
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-      }
+      carrito[tienda].push(producto);
+      guardarCarrito();
+      renderCarrito();
 
-      .form {
-        display: flex;
-        gap: 8px;
-        margin-bottom: 16px;
-      }
+      input.value = "";
+      input.focus();
+    });
 
-      .form input[type="text"],
-      .form select {
-        padding: 12px;
-        border: none;
-        border-radius: 12px;
-        font-size: 14px;
-        outline: none;
-        background: rgba(255, 255, 255, 0.7);
-      }
-
-      .form input[type="text"] {
-        flex: 2;
-      }
-
-      .form select {
-        flex: 1;
-      }
-
-      .form button {
-        flex: 0.5;
-        padding: 12px;
-        border: none;
-        border-radius: 12px;
-        font-size: 16px;
-        background: linear-gradient(135deg, #6a11cb, #2575fc);
-        color: white;
-        font-weight: bold;
-        cursor: pointer;
-        transition: transform 0.2s, box-shadow 0.2s;
-      }
-
-      .form button:hover {
-        transform: scale(1.05);
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-      }
-
-      .lista {
-        max-height: calc(100vh - 220px);
-        overflow-y: auto;
-        padding-top: 8px;
-        scrollbar-width: thin;
-      }
-
-      .lista::-webkit-scrollbar {
-        width: 6px;
-      }
-      .lista::-webkit-scrollbar-thumb {
-        background: rgba(255, 255, 255, 0.4);
-        border-radius: 4px;
-      }
-
-      .tienda {
-        font-weight: bold;
-        font-size: 16px;
-        color: #fff;
-        padding: 10px;
-        margin: 12px 0 6px;
-        border-radius: 12px;
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-      }
-      .tienda.mercadona {
-        background: linear-gradient(135deg, #4caf50, #2e7d32);
-      }
-      .tienda.lidl {
-        background: linear-gradient(135deg, #ffd600, #1976d2);
-      }
-      .tienda.carrefour {
-        background: linear-gradient(135deg, #ff1744, #283593);
-      }
-      .tienda.ahorramas {
-        background: linear-gradient(135deg, #ff9800, #f44336);
-      }
-
-      .producto {
-        padding: 12px;
-        margin-bottom: 8px;
-        border-radius: 12px;
-        font-size: 14px;
-        color: #333;
-        background: rgba(255, 255, 255, 0.5);
-        backdrop-filter: blur(6px);
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-      }
-    </style>
-  </head>
-  <body>
-    <div class="app">
-      <h1>🛒 Mi Carrito</h1>
-
-      <div class="form">
-        <input type="text" placeholder="Añadir producto..." />
-        <select>
-          <option>Mercadona</option>
-          <option>Ahorramas</option>
-          <option>Lidl</option>
-          <option>Carrefour</option>
-        </select>
-        <button>+</button>
-      </div>
-
-      <div class="lista"></div>
-    </div>
-  </body>
-</html>
+    // Cargamos el carrito al inicio
+    await cargarCarrito();
+  });
+</script>
