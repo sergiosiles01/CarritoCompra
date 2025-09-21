@@ -101,6 +101,7 @@
     </script>
 
     <style>
+      /* Reset y base */
       body {
         margin: 0;
         font-family: "Segoe UI", sans-serif;
@@ -110,6 +111,7 @@
         min-height: 100vh;
       }
 
+      /* Contenedor principal */
       .app {
         flex: 1;
         width: 100%;
@@ -117,6 +119,7 @@
         box-sizing: border-box;
       }
 
+      /* Título */
       h1 {
         font-size: 22px;
         text-align: center;
@@ -125,36 +128,31 @@
         text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
       }
 
+      /* Formulario principal */
       .form {
         display: flex;
+        flex-wrap: wrap;
         gap: 8px;
-        margin-bottom: 16px;
+        margin-bottom: 8px;
       }
 
       .form input[type="text"],
-      .form select {
+      .form select,
+      .form button {
+        flex: 1 1 auto;
         padding: 12px;
         border: none;
         border-radius: 12px;
         font-size: 14px;
         outline: none;
+      }
+
+      .form input[type="text"],
+      .form select {
         background: rgba(255, 255, 255, 0.7);
       }
 
-      .form input[type="text"] {
-        flex: 2;
-      }
-
-      .form select {
-        flex: 1;
-      }
-
       .form button {
-        flex: 0.5;
-        padding: 12px;
-        border: none;
-        border-radius: 12px;
-        font-size: 16px;
         background: linear-gradient(135deg, #6a11cb, #2575fc);
         color: white;
         font-weight: bold;
@@ -167,6 +165,34 @@
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
       }
 
+      /* Botones adicionales (exportar/importar/enlace) */
+      .form-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: center;
+        margin-bottom: 16px;
+      }
+
+      .form-buttons button {
+        flex: 1 1 100%;
+        padding: 12px;
+        border: none;
+        border-radius: 12px;
+        font-size: 16px;
+        background: linear-gradient(135deg, #6a11cb, #2575fc);
+        color: white;
+        font-weight: bold;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+      }
+
+      .form-buttons button:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      }
+
+      /* Lista de productos */
       .lista {
         max-height: calc(100vh - 220px);
         overflow-y: auto;
@@ -177,11 +203,13 @@
       .lista::-webkit-scrollbar {
         width: 6px;
       }
+
       .lista::-webkit-scrollbar-thumb {
         background: rgba(255, 255, 255, 0.4);
         border-radius: 4px;
       }
 
+      /* Tiendas */
       .tienda {
         font-weight: bold;
         font-size: 16px;
@@ -191,19 +219,24 @@
         border-radius: 12px;
         text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
       }
+
       .tienda.mercadona {
         background: linear-gradient(135deg, #4caf50, #2e7d32);
       }
+
       .tienda.lidl {
         background: linear-gradient(135deg, #ffd600, #1976d2);
       }
+
       .tienda.carrefour {
         background: linear-gradient(135deg, #ff1744, #283593);
       }
+
       .tienda.ahorramas {
         background: linear-gradient(135deg, #ff9800, #f44336);
       }
 
+      /* Productos */
       .producto {
         padding: 12px;
         margin-bottom: 8px;
@@ -213,6 +246,22 @@
         background: rgba(255, 255, 255, 0.5);
         backdrop-filter: blur(6px);
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+      }
+
+      /* Responsivo */
+      @media (min-width: 600px) {
+        .form input[type="text"] {
+          flex: 2;
+        }
+        .form select {
+          flex: 1;
+        }
+        .form button {
+          flex: 0.5;
+        }
+        .form-buttons button {
+          flex: 1 1 auto;
+        }
       }
     </style>
   </head>
@@ -229,14 +278,10 @@
           <option>Carrefour</option>
         </select>
         <button id="addBtn">+</button>
-        <button id="exportBtn">Exportar</button>
-        <button id="importBtn">Importar</button>
-        <input
-          type="file"
-          id="fileInput"
-          style="display: none"
-          accept=".json"
-        />
+      </div>
+
+      <div class="form-buttons">
+        <button id="exportBtn">Compartir enlace</button>
       </div>
 
       <div class="lista"></div>
